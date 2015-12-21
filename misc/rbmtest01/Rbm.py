@@ -1,114 +1,127 @@
 #!/usr/bin/env python
 
-import random as rnd
+import numpy.random as rnd
 import numpy as np
 
 
 class Rbm:
-  def __init__(self, D=None, m=0, n=0, a=0.1):
-    self.D = D
-    self.m = m
-    self.n = n
-    self.b = np.zeros(m) #j visible
-    self.c = np.zeros(n) #i hidden
-    self.w = np.zeros((n, m))
-    self.a = a
+    def __init__(self, D=None, m=0, n=0, a=0.1):
+        self.D = D
+        self.m = m
+        self.n = n
+        self.b = np.zeros((1, m))  # j visible
+        self.c = np.zeros((1, n))  # i hidden
+        self.w = np.zeros((n, m))
+        self.a = a
 
-  def sigmoid(self, x):
-    return 1. / (1. + np.exp(-x))
+    def sigmoid(self, x):
+        vf = np.vectorize(lambda y: 1/(1+np.exp(-y)))
+        return vf(x)
 
-  def p_vh(self, h, k):
-    return self.sigmoid(
-        np.dot(self.w[:,k], h) + self.b[k])
+    def sgn(self, x, th):
+        vf = np.vectorize(lambda y, t: 1 if y < t else 0)
+        return vf(x, th)
 
-  def p_hv(self, v, k):
-    return self.sigmoid(
-        np.dot(self.w[k,:], v) + self.c[k])
+    def p_vh(self, h):
+        return self.sigmoid(np.dot(h, self.w) + self.b)
 
-  def cd_k(self, v0):
-    h1 = np.zeros(self.n)
-    v1 = np.zeros(self.m)
+    def p_hv(self, v):
+        return self.sigmoid(np.dot(v, self.w.T) + self.c)
 
-    for i in range(self.n):
-      h1[i] = 0 if rnd.random() > self.p_hv(v0, i) else 1
+    def cd_k(self, v0):
+        h1 = rnd.rand(1, self.n)
+        v1 = rnd.rand(1, self.m)
 
-    for j in range(self.m):
-      v1[j] = 0 if rnd.random() > self.p_vh(h1, j) else 1
+        h1 = self.sgn(h1, self.p_hv(v0))
+        v1 = self.sgn(v1, self.p_vh(h1))
 
-    return [h1, v1]
+        return [h1, v1]
 
-  def train(self):
-    dsize = np.size(self.D[:,1])
-    dw = np.zeros((self.n, self.m))
-    db = np.zeros(self.m)
-    dc = np.zeros(self.n)
-    for l in range(dsize):
-      v0 = self.D[l,:]
-      [hk, vk] = self.cd_k(v0)  # k = 1
-      for j in range(self.m):
-        db[j] = db[j] + v0[j] - vk[j]
-        for i in range(self.n):
-          dc[i] = dc[i] + self.p_hv(v0, i) - self.p_hv(vk, i)
-          dw[i,j] = dw[i,j] + (self.p_hv(v0, i) * v0[j]) - (self.p_hv(vk, i) * vk[j])
+    def train(self):
+        dsize = np.size(self.D[:, 1])
+        dw = np.zeros((self.n, self.m))
+        db = np.zeros((1, self.m))
+        dc = np.zeros((1, self.n))
+        for l in range(dsize):
+            v0 = self.D[l:l+1, :]
+            [_, vk] = self.cd_k(v0)  # k = 1
+            p_hv0 = self.p_hv(v0)
+            p_hvk = self.p_hv(vk)
+            dw += np.dot(p_hv0.T, v0) - np.dot(p_hvk.T, vk)
+            db += v0 - vk
+            dc += p_hv0 - p_hvk
+        alpha = self.a / dsize
+        self.w += alpha*dw
+        self.b += alpha*db
+        self.c += alpha*dc
 
-    alpha = self.a / dsize
-    self.w = alpha*self.w + dw
-    self.b = alpha*self.b + db
-    self.c = alpha*self.c + dc
+    def sim(self, v):
+        h1 = self.p_hv(v)
+        v1 = self.p_vh(h1)
+        return self.sgn(np.full(v1.shape, 0.5), v1)
 
-  def test(self, v):
-    h1 = np.zeros(self.n)
-    v1 = np.zeros(self.m)
-    for i in range(self.n):
-      h1[i] = self.sigmoid(np.dot(self.w[i,:], v) + self.c[i])
+    def energy(self, h, v):
+        t1 = np.dot(np.dot(h, self.w), v.T)
+        t2 = np.dot(self.b, v.T)
+        t3 = np.dot(self.c, h.T)
+        return -t1-t2-t3
 
-    for j in range(self.m):
-      v1[j] = self.sigmoid(np.dot(self.w[:,j], h1) + self.b[j])
+    def free_energy(self, v):
+        t1 = np.dot(self.b, v.T)
+        h_1 = np.exp(np.dot(v, self.w.T) + self.c)
+        h_0 = np.full(h_1.shape, 1.)
+        t2 = np.sum(np.log(h_0 + h_1), axis=1)
+        return -t1-t2
 
-    dispstr='E={}'.format(self.energy(v1,h1))
-    print dispstr
+    def log_pl_for(self, i):
+        Di = self.D.copy()
+        Di[:, i] = 1 - Di[:, i]
+        fe_D  = self.free_energy(self.D)
+        fe_Di = self.free_energy(Di)
+        costs = self.m * np.log(self.sigmoid(fe_Di - fe_D))
+        return np.mean(costs)
 
-    return v1
+    def log_pl_all(self):
+        idx = np.arange(self.m)
+        v_log_pl = np.vectorize(self.log_pl_for)
+        return v_log_pl(idx)
 
-  def energy(self, v, h):
-    t1 = 0
-    t2 = 0
-    t3 = 0
-    for i in range(self.n):
-      t3 = t3 + self.c[i]*h[i]
-      for j in range(self.m):
-        t1 = t1 + self.w[i,j]*h[i]*v[j]
+    def log_pl(self):
+        i = rnd.randint(self.m)
+        return self.log_pl_for(i)
 
-    for j in range(self.m):
-      t2 = t2 + self.b[j]*v[j]
+    def log_pl_precise(self):
+        return np.mean(self.log_pl_all())
 
-    return -t1-t2-t3
-  
 
-def main(learningrate=0.01,epoch=250):
-    data = np.array([[1,1,1,0,0,0],
-                     [1,0,1,0,0,0],
-                     [1,1,1,0,0,0],
-                     [0,0,1,1,1,0],
-                     [0,0,1,1,0,0],
-                     [0,0,1,1,1,0],
-                     [0,0,1,1,1,0]])
+def main(learningrate=0.7,epoch=300):
+    data = np.array([[1, 1, 1, 0, 0, 0],
+                     [1, 0, 1, 0, 0, 0],
+                     [1, 1, 1, 0, 0, 0],
+                     [0, 0, 1, 1, 1, 0],
+                     [0, 0, 1, 1, 0, 0],
+                     [0, 0, 1, 1, 1, 0],
+                     [0, 0, 1, 1, 1, 0]])
 
-    rbm = Rbm(data, m=6, n=5, a=learningrate)
+    tsdt = np.array([[0, 0, 1, 1, 1, 0],
+                     [0, 1, 1, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0],
+                     [0, 0, 1, 0, 0, 1]])
+
+    rbm = Rbm(data, m=6, n=2, a=learningrate)
 
     for ep in range(epoch):
-      rbm.train()
-      dispstr = '\rEp:{}'.format(ep)
-      print dispstr ,
+        rbm.train()
+        print ('ep={}, E={}'.format(ep, rbm.log_pl_all()))
 
-    rbm.train()
-    print rbm.test([0, 0, 1, 1, 1, 0])
-    print rbm.test([0, 1, 1, 0, 0, 0])
-    print rbm.test([0, 0, 0, 0, 0, 0])
-    print rbm.test([0, 0, 1, 0, 0, 1])
+    dsize = np.size(tsdt[:, 1])
+    for l in range(dsize):
+        [h1, v1] = rbm.cd_k(tsdt[l:l+1, :])
+        energy = rbm.log_pl()
+        print ('h={}, v={}, E={}'.format(h1, v1, energy))
 
-    dispstr = 'w={} b={} c={}'.format(rbm.w, rbm.b, rbm.c)
-    print dispstr
+    print (rbm.sim(tsdt))
+
 
 if __name__ == "__main__":
     main()
