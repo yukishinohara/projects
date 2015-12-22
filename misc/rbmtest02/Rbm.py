@@ -14,11 +14,13 @@ class Rbm:
         self.w = np.zeros((n, m))
         self.a = a
 
-    def sigmoid(self, x):
+    @staticmethod
+    def sigmoid(x):
         vf = np.vectorize(lambda y: 1/(1+np.exp(-y)))
         return vf(x)
 
-    def sgn(self, x, th):
+    @staticmethod
+    def sgn(x, th):
         vf = np.vectorize(lambda y, t: 1 if y < t else 0)
         return vf(x, th)
 
@@ -31,6 +33,8 @@ class Rbm:
     def cd_k(self, v0, k=1):
         k = 1 if k < 1 else k
         vb = v0.copy()
+        hs = np.zeros((1, self.n))
+        vs = np.zeros((1, self.m))
         for step in range(k):
             hs = rnd.rand(1, self.n)
             vs = rnd.rand(1, self.m)
@@ -59,8 +63,7 @@ class Rbm:
         self.c += alpha*dc
 
     def sim(self, v):
-        h1 = self.p_hv(v)
-        v1 = self.p_vh(h1)
+        v1 = self.sim2(v)
         return self.sgn(np.full(v1.shape, 0.5), v1)
 
     def sim2(self, v):
@@ -68,11 +71,10 @@ class Rbm:
         v1 = self.p_vh(h1)
         return v1
 
-    def energy(self, h, v):
-        t1 = np.dot(np.dot(h, self.w), v.T)
-        t2 = np.dot(self.b, v.T)
-        t3 = np.dot(self.c, h.T)
-        return -t1-t2-t3
+    def cost(self, v=None, lazy=False):
+        if lazy:
+            return self.log_pl(v)
+        return self.log_pl_precise(v)
 
     def free_energy(self, v):
         t1 = np.dot(self.b, v.T)

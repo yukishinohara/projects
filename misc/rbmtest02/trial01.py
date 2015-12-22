@@ -49,8 +49,8 @@ def main(ita=0.7, epoch=60, verbose=2, hidden=4, test_prop=5):
     if verbose >= 1:
         print ('predict = {}'.format(p))
         print ('target  = {}'.format(t))
-    cr = np.count_nonzero((t-p)) / test_size
-    print ('CR = {}%'.format(cr*100))
+    er = np.count_nonzero((t-p)) / test_size
+    print ('ER = {}%'.format(er*100))
 
     return predy
 
