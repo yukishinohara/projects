@@ -5,7 +5,7 @@ import numpy as np
 
 
 class Rbm:
-    def __init__(self, D=None, m=0, n=0, a=0.1, u=0., q=0.):
+    def __init__(self, D=None, m=0, n=0, lr=0.1, mt=0., wd=0., bs=0):
         # Parameters
         self.D = D
         self.m = m
@@ -13,9 +13,10 @@ class Rbm:
         self.b = np.zeros((1, m))  # j visible
         self.c = np.zeros((1, n))  # i hidden
         self.w = np.zeros((n, m))
-        self.a = a
-        self.u = u
-        self.q = q
+        self.lr = lr
+        self.mt = mt
+        self.wd = wd
+        self.bs = bs
         # For Momentum
         self.delta_w = 0.
         self.delta_b = 0.
@@ -52,22 +53,35 @@ class Rbm:
         return [hs, vs]
 
     def train(self):
-        dsize = np.size(self.D[:, 1])
+        data_size = np.size(self.D[:, 1])
+        batch_size = self.bs
+        if self.bs < 1:
+            return self.train_by_mini_batch(self.D, data_size)
+        vint = np.vectorize(lambda q: int(q))
+        indices = np.arange(0, data_size)
+        indices = vint(indices / batch_size)
+        num_batch = np.max(indices) + 1
+        for i in range(num_batch):
+            mini_batch = self.D[indices == i, :]
+            mini_size = mini_batch[:, 0].size
+            self.train_by_mini_batch(mini_batch, mini_size)
+
+    def train_by_mini_batch(self, batch, batch_size):
         dw = np.zeros((self.n, self.m))
         db = np.zeros((1, self.m))
         dc = np.zeros((1, self.n))
-        for l in range(dsize):
-            v0 = self.D[l:l+1, :]
+        for l in range(batch_size):
+            v0 = batch[l:l+1, :]
             [_, vk] = self.cd_k(v0)  # k = 1
             p_hv0 = self.p_hv(v0)
             p_hvk = self.p_hv(vk)
             dw += np.dot(p_hv0.T, v0) - np.dot(p_hvk.T, vk)
             db += v0 - vk
             dc += p_hv0 - p_hvk
-        alpha = self.a / dsize
-        self.delta_w = alpha*dw + self.u*self.delta_w - self.q*self.w
-        self.delta_b = alpha*db + self.u*self.delta_b - self.q*self.b
-        self.delta_c = alpha*dc + self.u*self.delta_c - self.q*self.c
+        alpha = self.lr / batch_size
+        self.delta_w = alpha*dw + self.mt*self.delta_w - self.wd*self.w
+        self.delta_b = alpha*db + self.mt*self.delta_b - self.wd*self.b
+        self.delta_c = alpha*dc + self.mt*self.delta_c - self.wd*self.c
         self.w += self.delta_w
         self.b += self.delta_b
         self.c += self.delta_c
@@ -129,7 +143,7 @@ def main(learningrate=0.1, epoch=1000, momentum=0.7, weight_decay=0.001, verbose
                      [0, 0, 0, 0, 0, 0],
                      [0, 0, 0, 0, 0, 1]])
 
-    rbm = Rbm(data, m=6, n=2, a=learningrate, u=momentum, q=weight_decay)
+    rbm = Rbm(data, m=6, n=2, lr=learningrate, mt=momentum, wd=weight_decay)
 
     for ep in range(epoch):
         rbm.train()

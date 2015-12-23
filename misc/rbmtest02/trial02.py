@@ -25,7 +25,7 @@ def train_with(x, y, params, verbose):
     m = y_x[0, :].size
 
     # Generate and train RBM
-    rbm = Rbm.Rbm(D=y_x, m=m, n=hidden, a=ita)
+    rbm = Rbm.Rbm(D=y_x, m=m, n=hidden, lr=ita)
     for ep in range(epoch):
         rbm.train()
         if verbose >= 5:

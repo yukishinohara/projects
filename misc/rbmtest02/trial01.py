@@ -25,7 +25,7 @@ def main(ita=0.7, epoch=60, verbose=2, hidden=4, test_prop=5):
     targy = y[tran_size:, :]
 
     # Generate RBM
-    rbm = Rbm.Rbm(inptd, m=attr_size+feat_size, n=hidden, a=ita)
+    rbm = Rbm.Rbm(inptd, m=attr_size+feat_size, n=hidden, lr=ita)
 
     # Training
     for ep in range(epoch):
