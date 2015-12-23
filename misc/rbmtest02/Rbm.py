@@ -5,7 +5,7 @@ import numpy as np
 
 
 class Rbm:
-    def __init__(self, D=None, m=0, n=0, a=0.1, u=0.):
+    def __init__(self, D=None, m=0, n=0, a=0.1, u=0., q=0.):
         # Parameters
         self.D = D
         self.m = m
@@ -15,6 +15,7 @@ class Rbm:
         self.w = np.zeros((n, m))
         self.a = a
         self.u = u
+        self.q = q
         # For Momentum
         self.delta_w = 0.
         self.delta_b = 0.
@@ -64,9 +65,9 @@ class Rbm:
             db += v0 - vk
             dc += p_hv0 - p_hvk
         alpha = self.a / dsize
-        self.delta_w = alpha*dw + self.u*self.delta_w
-        self.delta_b = alpha*db + self.u*self.delta_b
-        self.delta_c = alpha*dc + self.u*self.delta_c
+        self.delta_w = alpha*dw + self.u*self.delta_w - self.q*self.w
+        self.delta_b = alpha*db + self.u*self.delta_b - self.q*self.b
+        self.delta_c = alpha*dc + self.u*self.delta_c - self.q*self.c
         self.w += self.delta_w
         self.b += self.delta_b
         self.c += self.delta_c
@@ -114,35 +115,36 @@ class Rbm:
         return np.mean(self.log_pl_all(D))
 
 
-def main(learningrate=0.6, epoch=300, verbose=2):
+def main(learningrate=0.1, epoch=1000, momentum=0.7, weight_decay=0.001, verbose=2):
     data = np.array([[1, 1, 1, 0, 0, 0],
                      [1, 0, 1, 0, 0, 0],
                      [1, 1, 1, 0, 0, 0],
                      [0, 0, 1, 1, 1, 0],
-                     [0, 0, 1, 1, 0, 0],
+                     [0, 0, 1, 1, 0, 1],
                      [0, 0, 1, 1, 1, 0],
                      [0, 0, 1, 1, 1, 0]])
 
     tsdt = np.array([[0, 0, 1, 1, 1, 0],
                      [0, 1, 1, 0, 0, 0],
                      [0, 0, 0, 0, 0, 0],
-                     [0, 0, 1, 0, 0, 1]])
+                     [0, 0, 0, 0, 0, 1]])
 
-    rbm = Rbm(data, m=6, n=2, a=learningrate)
+    rbm = Rbm(data, m=6, n=2, a=learningrate, u=momentum, q=weight_decay)
 
     for ep in range(epoch):
         rbm.train()
         if verbose >= 2:
-            print ('ep={}, E={}'.format(ep, rbm.log_pl_all()))
+            print('\rep={}, E={}'.format(ep, rbm.cost()), end="")
 
     if verbose >= 1:
         dsize = np.size(tsdt[:, 1])
+        print('')
         for l in range(dsize):
             [h1, v1] = rbm.cd_k(tsdt[l:l+1, :])
             energy = rbm.log_pl_precise(tsdt[l:l+1, :])
-            print ('h={}, v={}, F={}'.format(h1, v1, energy))
+            print('h={}, v={}, F={}'.format(h1, v1, energy))
 
-    print (rbm.sim(tsdt))
+    print(rbm.sim2(tsdt))
 
 
 if __name__ == "__main__":

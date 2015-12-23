@@ -13,22 +13,25 @@ def train_with(x, y, params, verbose):
     epoch = None
     hidden = None
     momentum = None
+    weight_decay = None
     if params is not None:
         ita = params.get('ita')
         epoch = params.get('epoch')
         hidden = params.get('hidden')
         momentum = params.get('momentum')
+        weight_decay = params.get('weight_decay')
     ita = 0.8 if ita is None else ita
     epoch = 100 if epoch is None else epoch
     hidden = 10 if hidden is None else hidden
     momentum = 0. if momentum is None else momentum
+    weight_decay = 0. if weight_decay is None else weight_decay
 
     # Organize instances
     y_x = np.c_[y, x]
     m = y_x[0, :].size
 
     # Generate and train RBM
-    rbm = Rbm.Rbm(D=y_x, m=m, n=hidden, a=ita, u=momentum)
+    rbm = Rbm.Rbm(D=y_x, m=m, n=hidden, a=ita, u=momentum, q=weight_decay)
     for ep in range(epoch):
         rbm.train()
         if verbose >= 5:
@@ -69,7 +72,8 @@ def main(verbose=3):
         'hidden': 3,
         'ita': 0.75,
         'epoch': 100,
-        'momentum': 0.6
+        'momentum': 0.6,
+        'weight_decay': 0.001
     }
 
     # Test it
