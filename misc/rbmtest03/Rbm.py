@@ -21,6 +21,8 @@ class Rbm:
         self.delta_w = 0.
         self.delta_b = 0.
         self.delta_c = 0.
+        # Initial values for params
+        self.initialize()
 
     @staticmethod
     def sigmoid(x):
@@ -31,6 +33,11 @@ class Rbm:
     def activate(x, th):
         vf = np.vectorize(lambda y, t: 1 if y < t else 0)
         return vf(x, th)
+
+    def initialize(self):
+        p = np.mean(self.D, axis=0)
+        self.b += np.log(p / (1-p))
+        self.w += rnd.normal(scale=0.01, size=(self.n, self.m))
 
     def binarize(self, v):
         return self.activate(np.full(v.shape, 0.5), v)
@@ -140,31 +147,37 @@ class Rbm:
         return np.mean(self.log_pl_all(D))
 
 
-def main(learningrate=0.1, epoch=1000, momentum=0.7, weight_decay=0.001, verbose=2):
-    data = np.array([[1, 1, 1, 0, 0, 0],
-                     [0, 1, 1, 0, 0, 0],
+def main(learningrate=0.4, epoch=1000, momentum=0.7, weight_decay=0.001, verbose=2):
+    # Attempt to learn 3 types of data [1,1,0,0,0,0], [0,0,1,1,0,0], [0,0,0,0,1,1] with some noise.
+    # It sometimes fails to learn them converging to another local minimum.
+    data = np.array([[1, 1, 0, 0, 0, 0],
                      [1, 1, 1, 0, 0, 0],
-                     [1, 1, 1, 0, 0, 1],
-                     [0, 0, 0, 1, 1, 1],
-                     [0, 0, 0, 1, 1, 1],
-                     [0, 0, 0, 1, 1, 1],
-                     [0, 0, 0, 1, 1, 0],
-                     [1, 0, 0, 1, 1, 1],
-                     [0, 0, 0, 1, 1, 1],
-                     [0, 0, 0, 1, 0, 1],
-                     [0, 0, 0, 1, 1, 1]])
+                     [0, 1, 0, 0, 0, 0],
+                     [1, 1, 0, 0, 0, 0],
+                     [0, 0, 1, 1, 0, 0],
+                     [0, 0, 1, 1, 1, 0],
+                     [0, 0, 0, 1, 0, 0],
+                     [0, 0, 1, 1, 0, 0],
+                     [0, 0, 0, 0, 1, 1],
+                     [1, 0, 0, 0, 1, 1],
+                     [0, 0, 0, 0, 0, 1],
+                     [0, 0, 0, 0, 1, 1],
+                     [0, 0, 0, 0, 1, 1],
+                     [0, 0, 0, 0, 1, 1]])
 
-    tsdt = np.array([[0, 0, 0, 1, 1, 1],
-                     [0, 0, 0, 1, 1, 0],
-                     [0, 0, 1, 1, 1, 1],
+    tsdt = np.array([[1, 1, 0, 0, 0, 0],
+                     [0, 0, 1, 1, 0, 0],
+                     [0, 0, 0, 0, 1, 1],
                      [1, 1, 1, 0, 0, 0],
-                     [0, 1, 1, 0, 0, 0],
-                     [1, 1, 1, 1, 0, 0],
-                     [0, 0, 0, 0, 0, 0],
+                     [0, 1, 1, 1, 0, 0],
+                     [0, 0, 1, 1, 1, 0],
+                     [0, 0, 0, 1, 1, 1],
                      [1, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 1]])
+                     [0, 0, 1, 0, 0, 0],
+                     [0, 0, 0, 0, 1, 0],
+                     [0, 0, 0, 0, 0, 0]])
 
-    rbm = Rbm(data, m=6, n=1, lr=learningrate, mt=momentum, wd=weight_decay)
+    rbm = Rbm(data, m=6, n=2, lr=learningrate, mt=momentum, wd=weight_decay)
 
     for ep in range(epoch):
         rbm.train()
