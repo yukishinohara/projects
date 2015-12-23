@@ -5,7 +5,8 @@ import numpy as np
 
 
 class Rbm:
-    def __init__(self, D=None, m=0, n=0, a=0.1):
+    def __init__(self, D=None, m=0, n=0, a=0.1, u=0.):
+        # Parameters
         self.D = D
         self.m = m
         self.n = n
@@ -13,6 +14,11 @@ class Rbm:
         self.c = np.zeros((1, n))  # i hidden
         self.w = np.zeros((n, m))
         self.a = a
+        self.u = u
+        # For Momentum
+        self.delta_w = 0.
+        self.delta_b = 0.
+        self.delta_c = 0.
 
     @staticmethod
     def sigmoid(x):
@@ -58,9 +64,12 @@ class Rbm:
             db += v0 - vk
             dc += p_hv0 - p_hvk
         alpha = self.a / dsize
-        self.w += alpha*dw
-        self.b += alpha*db
-        self.c += alpha*dc
+        self.delta_w = alpha*dw + self.u*self.delta_w
+        self.delta_b = alpha*db + self.u*self.delta_b
+        self.delta_c = alpha*dc + self.u*self.delta_c
+        self.w += self.delta_w
+        self.b += self.delta_b
+        self.c += self.delta_c
 
     def sim(self, v):
         v1 = self.sim2(v)

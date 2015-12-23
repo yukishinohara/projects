@@ -15,6 +15,11 @@ def cross_validation(x, y, train_func, test_func, k=10, repeat=1, params=None, v
     indices = vint(indices / fold_size)
     ers = np.zeros((repeat, k))
 
+    if k < 2:
+        indices = np.arange(0, data_size)
+        fold_size = int(data_size / 10)
+        indices = 0 + (indices > fold_size)
+
     for q in range(repeat):
         for s in range(k):
             x_tran = x[indices != s]
