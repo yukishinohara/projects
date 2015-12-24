@@ -64,7 +64,7 @@ class Rbm:
         return [hs, vs]
 
     def train(self):
-        data_size = np.size(self.D[:, 1])
+        data_size = np.size(self.D[:, 0])
         batch_size = self.bs
         if self.bs < 1:
             return self.train_by_mini_batch(self.D, data_size)

@@ -4,9 +4,10 @@ import pyopencl as cl
 import numpy as np
 import time
 
-ha = 256*16
-wa = 256*16
-wb = 256*16
+size = 256
+ha = size
+wa = size
+wb = size
 
 ctx = cl.create_some_context(interactive=True)
 queue = cl.CommandQueue(ctx)
@@ -108,18 +109,20 @@ matrixMul(__global float* C,
 '''
 
 prg = cl.Program(ctx, code).build()
-gsize = (256*16, 256*16)
+gsize = (size, size)
 lsize = (16, 16)
 
-start = time.time()
-event = prg.matrixMul(queue, gsize, lsize, c_buf, a_buf, b_buf, np.int32(wa), np.int32(wb))
-event.wait()
-gputime = time.time() - start
-cl.enqueue_copy(queue, c, c_buf)
+for i in range(2000):
+    start = time.time()
+    event = prg.matrixMul(queue, gsize, lsize, c_buf, a_buf, b_buf, np.int32(wa), np.int32(wb))
+    event.wait()
+    gputime = time.time() - start
+    cl.enqueue_copy(queue, c, c_buf)
 
-start = time.time()
-npresult = np.dot(a, b)
-cputime = time.time() - start
+    start = time.time()
+    npresult = np.dot(a, b)
+    cputime = time.time() - start
 
-print('g={}, c={}, err={}'.format(gputime, cputime, np.count_nonzero(1 - (c == npresult))))
+    print('err={}, g={}, c={}'.format(np.count_nonzero(1 - (c == npresult)), gputime, cputime))
+
 print('done')
