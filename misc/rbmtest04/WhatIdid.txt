@@ -1,0 +1,26 @@
+ 1) Check if my GPU supports OpenCL (GPU Caps Viewer)
+  http://www.ozone3d.net/gpu_caps_viewer/
+
+ 2) Install AMD OpenCL SDK
+  http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk/
+
+ 3) Install PyOpenCL (pyopencl-2015.1-cp35-none-win_amd64.whl)
+  http://www.lfd.uci.edu/~gohlke/pythonlibs/
+
+ 4) Install Visual C++ Redistributable for Visual Studio 2015
+  https://www.microsoft.com/en-us/download/details.aspx?id=48145
+
+ 5) Replace OpenCL.dll from the old NVIDIA one (for 1.1) to the new AMD one that is in (2)
+    (Found the dependency error with http://www.dependencywalker.com/)
+
+ 6) Try import pyopencl  -- no error happens!
+  http://cyrille.rossant.net/pyopencl-on-windows-without-a-gpu/
+
+ 7) Set the environment variable PYOPENCL_COMPILER_OUTPUT = "1"
+  ... to see compiler messages from the kernel compiler.
+
+ 8) Try sample programs
+  https://github.com/sigproc/python-sigprocge/blob/master/sigprocge/cl.py
+  http://cyrille.rossant.net/pyopencl-on-windows-without-a-gpu/
+  http://documen.tician.de/pyopencl/
+
