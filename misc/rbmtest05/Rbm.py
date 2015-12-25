@@ -37,7 +37,8 @@ class Rbm:
 
     def initialize(self):
         p = np.mean(self.D, axis=0)
-        self.b += np.log(p / (1-p))
+        vlog = np.vectorize(lambda q: 0 if q < 0.0001 or q > 0.99999 else np.log(q/(1-q)))
+        self.b += vlog(p)
         self.w += rnd.normal(scale=0.01, size=(self.n, self.m))
 
     def binarize(self, v):
