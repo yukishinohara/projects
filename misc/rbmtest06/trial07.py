@@ -71,8 +71,8 @@ def main(verbose=2):
 
 
 def main2(verbose=2):
-    loader = mn.MNISTloader('..\\rbmtest05\\__data__')
-    [xt, yt] = loader.load_test_data(msize=1000)
+    loader = mn.MNISTloader(os.path.join('.', '__data__'))
+    [xt, yt] = loader.load_test_data()
 
     # Load DBN
     zipFile = zipfile.ZipFile('dbn_mnist.zip', 'r')
