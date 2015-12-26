@@ -8,18 +8,18 @@ import numpy as np
 class RbmVectorized(rl.Rbm):
     def __init__(self, D=None, m=0, n=0, lr=0.1, mt=0., wd=0., bs=0):
         rl.Rbm.__init__(self, D, m, n, lr, mt, wd, bs)
-        self.v_sigmoid = np.vectorize(lambda y: 1/(1+np.exp(-y)))
-        self.v_activate = np.vectorize(lambda y, t: 1 if y < t else 0)
 
     def train_by_mini_batch(self, batch, batch_size):
+        v_sigmoid = np.vectorize(lambda y: 1/(1+np.exp(-y)))
+        v_activate = np.vectorize(lambda y, t: 1 if y < t else 0)
         wT = self.w.T
         h0 = np.random.rand(batch_size, self.n)
         v1 = np.random.rand(batch_size, self.m)
-        p_hv0 = self.v_sigmoid(np.dot(batch, wT) + self.c)
-        h0 = self.v_activate(h0, p_hv0)
-        p_vh0 = self.v_sigmoid(np.dot(h0, self.w) + self.b)
-        v1 = self.v_activate(v1, p_vh0)
-        p_hv1 = self.v_sigmoid(np.dot(v1, wT) + self.c)
+        p_hv0 = v_sigmoid(np.dot(batch, wT) + self.c)
+        h0 = v_activate(h0, p_hv0)
+        p_vh0 = v_sigmoid(np.dot(h0, self.w) + self.b)
+        v1 = v_activate(v1, p_vh0)
+        p_hv1 = v_sigmoid(np.dot(v1, wT) + self.c)
         dw = np.dot(p_hv0.T, batch) - np.dot(p_hv1.T, v1)
         db = batch - v1
         dc = p_hv0 - p_hv1

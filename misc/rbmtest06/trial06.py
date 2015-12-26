@@ -54,7 +54,7 @@ def main(verbose=1):
     print(t_fmt)
     print('Err rate={}% ({}/{})'.format(err_num*100.0/total_num, err_num, total_num))
 
-    ann = ol.OutputLayer(x_test, y_test, lr=ita, mt=momentum, wd=weight_decay, bs=batch_size)
+    ann = ol.OutputLayer(x_train, y_train, lr=ita, mt=momentum, wd=weight_decay, bs=batch_size)
     for ep in range(epoch):
         ann.train()
     p = ann.sim(x_test)
