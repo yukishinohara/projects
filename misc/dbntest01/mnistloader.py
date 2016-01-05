@@ -41,8 +41,8 @@ class MNISTloader:
         lbl_data = np.array(struct.unpack('>{}B'.format(lsize), lbl_file.read(lsize)), dtype=int)
         lbl_file.close()
 
-        vzerone = np.vectorize(lambda q: 1 if q != 0 else 0)
-        img_data = vzerone(img_data)
+        # vzerone = np.vectorize(lambda q: 1 if q != 0 else 0)
+        img_data *= 0.00390625  # 1/256
 
         lbl_data_fmt = np.zeros((lsize, np.max(lbl_data)+1))
         for i in range(lsize):

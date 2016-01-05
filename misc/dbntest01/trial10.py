@@ -17,21 +17,21 @@ def main(verbose=2):
 
     dbn = dl.Dbn()
     # For Pre-training
-    learning_rate = 0.2
-    epoch = 150
-    momentum = 0.7
+    learning_rate = 0.1
+    epoch = 240
+    momentum = 0.6
     weight_decay = 0.001
-    batch_size = 50
-    dbn.pre_train(x, y, hidden_sizes=[450, 450],
+    batch_size = 40
+    dbn.pre_train(x, y, hidden_sizes=[300, 300],
                   learning_rate=learning_rate, momentum=momentum, weight_decay=weight_decay,
                   batch_size=batch_size, epoch=epoch, verbose=verbose)
 
     # For Fine-tuning
-    learning_rate = 0.01
-    epoch = 150
+    learning_rate = 0.05
+    epoch = 160
     momentum = 0.5
     weight_decay = 0.001
-    batch_size = 50
+    batch_size = 40
     dbn.fine_tune(x, y,
                   learning_rate=learning_rate, momentum=momentum, weight_decay=weight_decay,
                   batch_size=batch_size, epoch=epoch, verbose=verbose)
@@ -83,5 +83,5 @@ def main2(verbose=2):
 
 
 if __name__ == "__main__":
-    main()
+    main2()
 
