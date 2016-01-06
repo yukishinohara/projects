@@ -7,34 +7,40 @@ import DummyLayer as Dl
 
 
 class ConvolutionLayer(Dl.DummyLayer):
-    def __init__(self, input_row_size, input_col_size, input_feature_num,
-                 weight_row_size, weight_col_size, output_feature_num,
+    def __init__(self, weight_row_size, weight_col_size, output_feature_num,
                  learning_rate=0.1, momentum=0.5, weight_decay=0.001):
         # Parameters
-        self.xh = input_row_size
-        self.xw = input_col_size
+        self.xh = self.xw = self.yh = self.yw = 1
         self.wh = weight_row_size
         self.ww = weight_col_size
-        self.yh = self.xh - self.wh + 1
-        self.yw = self.xw - self.ww + 1
-        self.f = input_feature_num
+        self.f = 1
         self.g = output_feature_num
         self.lr = learning_rate
         self.mt = momentum
         self.wd = weight_decay
-        self.w = np.zeros((self.f, self.g, self.wh, self.ww))
-        self.c = np.zeros((self.g, self.yh, self.yw))
+        self.c = 0.
+        self.w = 0.
         # For the momentum term
         self.delta_w = 0.
         self.delta_c = 0.
         Dl.DummyLayer.__init__(self)
 
-    def initialize_params(self, x):
-        bound = self.wh * self.ww * (self.f + self.g)
+    def initialize_params(self, x, hyper_params):
+        _, self.f, self.xh, self.xw = x.shape
+        self.yh = self.xh - self.wh + 1
+        self.yw = self.xw - self.ww + 1
+        self.w = np.zeros((self.f, self.g, self.wh, self.ww))
+        self.c = np.zeros((self.g, self.yh, self.yw))
+        # Max bound from http://www.deeplearning.net/tutorial/lenet.html
+        bound = np.sqrt(6. / (self.wh * self.ww * (self.f + self.g)))
         self.w += np.random.uniform(-bound, bound, size=self.w.shape)
+        self.set_hyper_params(**hyper_params)
         return
 
-    def set_hyper_params(self, learning_rate=None, momentum=None, weight_decay=None):
+    def update_hyper_params(self, hyper_params):
+        self.set_hyper_params(**hyper_params)
+
+    def set_hyper_params(self, learning_rate=None, momentum=None, weight_decay=None, **ignored):
         if learning_rate is not None:
             self.lr = learning_rate
         if momentum is not None:
@@ -71,15 +77,16 @@ class ConvolutionLayer(Dl.DummyLayer):
 
     def get_input_delta(self, output_delta):
         d = output_delta.shape[0]
+        xh = self.yh + self.wh - 1
+        xw = self.yw + self.ww - 1
         wf = self.w[:, :, ::-1, ::-1]
         z_row = np.zeros((d, self.g, self.wh - 1, self.yw))
-        z_col = np.zeros((d, self.g, self.xh + self.wh - 1, self.ww - 1))
+        z_col = np.zeros((d, self.g, xh + self.wh - 1, self.ww - 1))
         dy2 = np.append(np.append(z_col,
                                   np.append(np.append(z_row, output_delta, axis=2), z_row, axis=2),
                                   axis=3), z_col, axis=3)
         dy3 = as_strided(dy2,
-                         shape=(d, self.g, self.xh, self.xw, self.wh, self.ww),
+                         shape=(d, self.g, xh, xw, self.wh, self.ww),
                          strides=dy2.strides+dy2.strides[-2::])
         dx = np.einsum('kprs,lpijrs->lkij', wf, dy3)
         return dx
-

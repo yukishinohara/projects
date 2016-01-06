@@ -7,14 +7,15 @@ import numpy.random as rnd
 
 
 class SigmoidLayer(Nl.NeuralLayer):
-    def __init__(self, input_size, output_size,
+    def __init__(self, output_size,
                  learning_rate=0.1, momentum=0.5, weight_decay=0.001):
-        Nl.NeuralLayer.__init__(self, input_size, output_size,
+        Nl.NeuralLayer.__init__(self, output_size,
                                 learning_rate=learning_rate, momentum=momentum, weight_decay=weight_decay)
 
-    def initialize_params(self, x):
+    def initialize_params(self, x, hyper_params):
+        Nl.NeuralLayer.initialize_params(self, x, hyper_params)
         p = np.mean(x, axis=0)
-        v_log = np.vectorize(lambda q: 0 if q == 0 or q == 1 else np.log(q/(1-q)))
+        v_log = np.vectorize(lambda q: 0 if q <= 0 or q >= 1 else np.log(q/(1-q)))
         self.b += v_log(p)
         self.w += rnd.normal(scale=0.01, size=(self.n, self.m))
 

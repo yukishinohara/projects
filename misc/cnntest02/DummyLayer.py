@@ -7,7 +7,10 @@ class DummyLayer:
     def __init__(self):
         pass
 
-    def initialize_params(self, x):
+    def initialize_params(self, x, hyper_params):
+        pass
+
+    def update_hyper_params(self, hyper_params):
         pass
 
     def train_unsupervised(self, x):

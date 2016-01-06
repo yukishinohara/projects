@@ -6,30 +6,35 @@ import DummyLayer as Dl
 
 
 class NeuralLayer(Dl.DummyLayer):
-    def __init__(self, input_size, output_size,
+    def __init__(self, output_size,
                  learning_rate=0.1, momentum=0.5, weight_decay=0.001):
         # Parameters
-        self.m = input_size
+        self.m = 0
         self.n = output_size
         self.lr = learning_rate
         self.mt = momentum
         self.wd = weight_decay
-        self.w = np.zeros((self.n, self.m))
-        self.b = np.zeros((1, self.m))
-        self.c = np.zeros((1, self.n))
+        self.w = 0.
+        self.b = 0.
+        self.c = 0.
         # For the momentum term
         self.delta_w = 0.
         self.delta_b = 0.
         self.delta_c = 0.
         Dl.DummyLayer.__init__(self)
 
-    def initialize_params(self, x):
-        self.w += 0.
-        self.b += 0.
-        self.c += 0.
+    def initialize_params(self, x, hyper_params):
+        self.m = x.shape[1]
+        self.w = np.zeros((self.n, self.m))
+        self.b = np.zeros((1, self.m))
+        self.c = np.zeros((1, self.n))
+        self.set_hyper_params(**hyper_params)
         return
 
-    def set_hyper_params(self, learning_rate=None, momentum=None, weight_decay=None):
+    def update_hyper_params(self, hyper_params):
+        self.set_hyper_params(**hyper_params)
+
+    def set_hyper_params(self, learning_rate=None, momentum=None, weight_decay=None, **ignored):
         if learning_rate is not None:
             self.lr = learning_rate
         if momentum is not None:
@@ -51,4 +56,3 @@ class NeuralLayer(Dl.DummyLayer):
 
     def get_input_delta(self, output_delta):
         return np.zeros((1, self.m))
-
