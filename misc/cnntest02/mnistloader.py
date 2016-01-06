@@ -66,7 +66,7 @@ class MNISTloader2D:
                 print('')
             print('')
 
-    def render(self, img_data, msize=None, width=10):
+    def render(self, img_data, msize=None, width=10, f=0):
         if msize is None:
             msize = img_data.shape[0]
         d = min(img_data.shape[0], msize)
@@ -80,5 +80,5 @@ class MNISTloader2D:
                 for j in range(c):
                     sj = (l % width) * r
                     si = (np.floor(l / width)) * c
-                    ans[si + i, sj + j] = img_data[l, 0, i, j]
+                    ans[si + i, sj + j] = img_data[l, f, i, j]
         return ans
