@@ -32,8 +32,8 @@ class MaxPoolingLayer(Dl.DummyLayer):
             warnings.warn('''
             The image sizes should be multiples of the scale ratios
             ({}, {}) cannot be divided by ({}, {})'''.format(self.xh, self.xw, self.ah, self.aw))
-        self.yh = np.floor(self.xh / self.ah)
-        self.yw = np.floor(self.xw / self.aw)
+        self.yh = int(self.xh / self.ah)
+        self.yw = int(self.xw / self.aw)
 
     def train_with_delta(self, x, output_delta):
         self.m = None

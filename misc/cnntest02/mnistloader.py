@@ -43,8 +43,8 @@ class MNISTloader2D:
         lbl_data = np.array(struct.unpack('>{}B'.format(d), lbl_file.read(d)), dtype=int)
         lbl_file.close()
 
-        vzerone = np.vectorize(lambda q: 1 if q > th else 0)
-        img_data = vzerone(img_data)
+        img_data *= 0.00390625  # / 256
+        img_data = np.clip(img_data, 0, 1)
 
         lbl_data_fmt = np.zeros((d, np.max(lbl_data)+1))
         for i in range(d):
@@ -73,12 +73,12 @@ class MNISTloader2D:
         r = img_data.shape[2]
         c = img_data.shape[3]
         width = min(width, d)
-        height = np.ceil(float(d) / float(width))
+        height = int(np.ceil(float(d) / float(width)))
         ans = np.zeros((height * r, width * c))
         for l in range(d):
             for i in range(r):
                 for j in range(c):
-                    sj = (l % width) * r
-                    si = (np.floor(l / width)) * c
+                    sj = int((l % width) * r)
+                    si = int((np.floor(l / width)) * c)
                     ans[si + i, sj + j] = img_data[l, f, i, j]
         return ans
