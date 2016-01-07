@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import SigmoidLayer as sl
+import SigmoidOutputLayer as so
 import NeuralLayer as nl
 import numpy as np
 import numpy.random as rnd
@@ -74,7 +75,7 @@ class Dbn:
         layer = self.layer[r]
         p = layer.simulate(x)
         out_delta = self.local_layer_fine_tune(p, y, r+1)
-        in_delta = layer.get_input_delta(out_delta)
+        in_delta = layer.get_input_delta(x, p, out_delta)
         layer.train_with_delta(x, out_delta)
         return in_delta
 
@@ -103,7 +104,7 @@ class Dbn:
                                        batch_size=bs[r], epoch=ep[r], verbose=verbose)
             instances = sig_layer.simulate(instances)
         r = self.layer_num - 1
-        sig_layer = sl.SigmoidLayer(y_col_size, lr[r], mt[r], wd[r])
+        sig_layer = so.SigmoidOutputLayer(y_col_size, lr[r], mt[r], wd[r])
         sig_layer.initialize_params(instances, {})
         self.layer.append(sig_layer)
         if verbose >= 1:

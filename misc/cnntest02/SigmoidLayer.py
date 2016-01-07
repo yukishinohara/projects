@@ -69,7 +69,8 @@ class SigmoidLayer(Nl.NeuralLayer):
         v_binarize = np.vectorize(lambda q, t: 1 if q < t else 0)
         return v_binarize(self.simulate(x))
 
-    def get_input_delta(self, output_delta):
-        input_delta = np.dot(output_delta, self.w)
+    def get_input_delta(self, x, y, output_delta):
+        ones = np.ones(y.shape)
+        input_delta = np.dot(output_delta * (y * (ones - y)), self.w)
         return input_delta
 

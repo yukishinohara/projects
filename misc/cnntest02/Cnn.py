@@ -6,6 +6,7 @@ import DummyLayer as Dl
 import ConvolutionLayer as Cl
 import MaxPoolingLayer as Ml
 import ConvoPool2SigmoidLayer as Il
+import SigmoidOutputLayer as So
 import numpy as np
 import warnings
 
@@ -15,8 +16,9 @@ LayerTypes = (
     LAYER_TYPE_SIGMOID,
     LAYER_TYPE_CONVOLUTION,
     LAYER_TYPE_MAX_POOLING,
-    LAYER_TYPE_CON2SIG
-) = range(0, 5)
+    LAYER_TYPE_CON2SIG,
+    LAYER_TYPE_SIGMOID_OUT
+) = range(0, 6)
 
 
 class Cnn:
@@ -68,6 +70,8 @@ class Cnn:
             return Ml.MaxPoolingLayer(**hyper_params)
         elif layer_type == LAYER_TYPE_CON2SIG:
             return Il.ConvoPool2SigmoidLayer()
+        elif layer_type == LAYER_TYPE_SIGMOID_OUT:
+            return So.SigmoidOutputLayer(**hyper_params)
         else:
             return Dl.DummyLayer()
 
@@ -84,7 +88,7 @@ class Cnn:
             self.layer[r].initialize_params(x, self.layer_params[r])
         p = self.layer[r].simulate(x)
         dy = self.layer_train_r(p, y, r+1)
-        dx = self.layer[r].get_input_delta(dy)
+        dx = self.layer[r].get_input_delta(x, p, dy)
         self.layer[r].train_with_delta(x, dy)
         return dx
 
@@ -263,7 +267,7 @@ def __train_and_test(verbose=1):
     types.append(LAYER_TYPE_CON2SIG)
     params.append({
     })
-    types.append(LAYER_TYPE_SIGMOID)
+    types.append(LAYER_TYPE_SIGMOID_OUT)
     params.append({
         'output_size': y.shape[1],
         'learning_rate': sg_lr, 'momentum': sg_mt, 'weight_decay': sg_wd

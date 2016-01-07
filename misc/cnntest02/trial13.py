@@ -142,7 +142,7 @@ def __train_and_test(verbose=1):
     types.append(Cn.LAYER_TYPE_CON2SIG)
     params.append({
     })
-    types.append(Cn.LAYER_TYPE_SIGMOID)
+    types.append(Cn.LAYER_TYPE_SIGMOID_OUT)
     params.append({
         'output_size': y.shape[1],
         'learning_rate': sg_lr, 'momentum': sg_mt, 'weight_decay': sg_wd
@@ -165,16 +165,17 @@ def __train_and_test(verbose=1):
     print(t_fmt)
     print('Err rate={}% ({}/{})'.format(err_num*100.0/total_num, err_num, total_num))
 
-    img_tool = mn.MNISTloader2D()
-    for r in range(len(types)):
-        if types[r] == Cn.LAYER_TYPE_MAX_POOLING:
-            for f in range(10):
-                yi = img_tool.render(ps[r], width=37, f=f)
-                img1 = Image.fromarray(np.uint8(yi * 255))
-                img1.show()
-    test_xi = img_tool.render(test_x, width=37)
-    img2 = Image.fromarray(np.uint8(test_xi * 255))
-    img2.show()
+    if verbose >= 3:
+        img_tool = mn.MNISTloader2D()
+        for r in range(len(types)):
+            if types[r] == Cn.LAYER_TYPE_MAX_POOLING:
+                for f in range(10):
+                    yi = img_tool.render(ps[r], width=37, f=f)
+                    img1 = Image.fromarray(np.uint8(yi * 255))
+                    img1.show()
+        test_xi = img_tool.render(test_x, width=37)
+        img2 = Image.fromarray(np.uint8(test_xi * 255))
+        img2.show()
 
 
 if __name__ == "__main__":

@@ -54,7 +54,7 @@ class MaxPoolingLayer(Dl.DummyLayer):
     def predict(self, x):
         return self.simulate(x)
 
-    def get_input_delta(self, output_delta):
+    def get_input_delta(self, x, y, output_delta):
         dy3 = np.repeat(np.repeat(output_delta, self.aw, axis=3), self.ah, axis=2)
         dx = self.m * dy3
         return dx

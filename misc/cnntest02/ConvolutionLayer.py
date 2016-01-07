@@ -75,7 +75,7 @@ class ConvolutionLayer(Dl.DummyLayer):
     def predict(self, x):
         return self.simulate(x)
 
-    def get_input_delta(self, output_delta):
+    def get_input_delta(self, x, y, output_delta):
         d = output_delta.shape[0]
         xh = self.yh + self.wh - 1
         xw = self.yw + self.ww - 1
