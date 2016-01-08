@@ -44,10 +44,10 @@ class SigmoidLayer(Nl.NeuralLayer):
         self.b += self.delta_b
         self.c += self.delta_c
 
-    def train_with_delta(self, x, output_delta):
+    def train_with_delta(self, x, delta):
         batch_size = x.shape[0]
-        dw = np.dot(output_delta.T, x)
-        dc = np.sum(output_delta, axis=0)
+        dw = np.dot(delta.T, x)
+        dc = np.sum(delta, axis=0)
         alpha = self.lr / float(batch_size)
         self.delta_w = alpha*dw + self.mt*self.delta_w - self.wd*self.w
         self.delta_c = alpha*dc + self.mt*self.delta_c - self.wd*self.c
@@ -69,9 +69,11 @@ class SigmoidLayer(Nl.NeuralLayer):
         v_binarize = np.vectorize(lambda q, t: 1 if q < t else 0)
         return v_binarize(self.simulate(x))
 
-    def get_deltas(self, x, y, err_from_next):
+    def get_delta(self, y, dedy):
         ones = np.ones(y.shape)
-        output_delta = err_from_next * (y * (ones - y))
-        input_err = np.dot(output_delta, self.w)
-        return output_delta, input_err
+        delta = dedy * (y * (ones - y))
+        return delta
+
+    def get_dedx(self, delta):
+        return np.dot(delta, self.w)
 

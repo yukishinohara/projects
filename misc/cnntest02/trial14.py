@@ -52,7 +52,7 @@ def __tmp_show_images(cnn, test_x, bs):
     img2.show()
 
 
-def __load_model_and_test(test_size=1000):
+def __load_model_and_test(test_size=0):
     # Load data and model
     loader = mn.MNISTloader2D('__data__')
     [test_x, test_y] = loader.load_test_data(msize=test_size)
@@ -71,7 +71,7 @@ def __load_model_and_test(test_size=1000):
 def __train_and_test(verbose=2):
     # Load data
     loader = mn.MNISTloader2D('__data__')
-    [x, y] = loader.load_train_data(msize=500)
+    [x, y] = loader.load_train_data(msize=1000)
     [test_x, test_y] = loader.load_test_data(msize=1000)
 
     # Common hyper parameters
@@ -121,7 +121,7 @@ def __train_and_test(verbose=2):
     types.append(Cn.LAYER_TYPE_CON2SIG)
     params.append({
     })
-    types.append(Cn.LAYER_TYPE_SIGMOID_OUT)
+    types.append(Cn.LAYER_TYPE_SIGMOID)
     params.append({
         'output_size': y.shape[1],
         'learning_rate': sg_lr, 'momentum': sg_mt, 'weight_decay': sg_wd

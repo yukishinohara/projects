@@ -6,9 +6,7 @@ import DummyLayer as Dl
 import ConvolutionLayer as Cl
 import MaxPoolingLayer as Ml
 import ConvoPool2SigmoidLayer as Il
-import SigmoidOutputLayer as So
 import numpy as np
-import warnings
 
 
 LayerTypes = (
@@ -16,9 +14,8 @@ LayerTypes = (
     LAYER_TYPE_SIGMOID,
     LAYER_TYPE_CONVOLUTION,
     LAYER_TYPE_MAX_POOLING,
-    LAYER_TYPE_CON2SIG,
-    LAYER_TYPE_SIGMOID_OUT
-) = range(0, 6)
+    LAYER_TYPE_CON2SIG
+) = range(0, 5)
 
 
 class Cnn:
@@ -70,27 +67,22 @@ class Cnn:
             return Ml.MaxPoolingLayer(**hyper_params)
         elif layer_type == LAYER_TYPE_CON2SIG:
             return Il.ConvoPool2SigmoidLayer()
-        elif layer_type == LAYER_TYPE_SIGMOID_OUT:
-            return So.SigmoidOutputLayer(**hyper_params)
         else:
             return Dl.DummyLayer()
 
     def layer_train_r(self, x, y, r):
-        if r == self.layer_num:
-            if y.shape != x.shape:
-                warnings.warn(
-                        'The target size and the output size are different {}, {}'.format(y.shape, x.shape))
-                return np.zeros(x.shape)
-            else:
-                return x
-        elif r == len(self.layer):
+        if r == len(self.layer):
             self.layer.append(self.create_layer(r))
             self.layer[r].initialize_params(x, self.layer_params[r])
         p = self.layer[r].simulate(x)
-        output_err = self.layer_train_r(p, y, r+1)
-        output_delta, input_err = self.layer[r].get_deltas(x, y, output_err)
-        self.layer[r].train_with_delta(x, output_delta)
-        return input_err
+        if r == self.layer_num - 1:
+            delta = y - p  # Assume the cost is the cross-entropy
+        else:
+            dedy = self.layer_train_r(p, y, r+1)
+            delta = self.layer[r].get_delta(p, dedy)
+        dedx = self.layer[r].get_dedx(delta)
+        self.layer[r].train_with_delta(x, delta)
+        return dedx
 
     def train(self, x, y,
               batch_size=10, epoch=50, verbose=0):
@@ -267,7 +259,7 @@ def __train_and_test(verbose=1):
     types.append(LAYER_TYPE_CON2SIG)
     params.append({
     })
-    types.append(LAYER_TYPE_SIGMOID_OUT)
+    types.append(LAYER_TYPE_SIGMOID)
     params.append({
         'output_size': y.shape[1],
         'learning_rate': sg_lr, 'momentum': sg_mt, 'weight_decay': sg_wd

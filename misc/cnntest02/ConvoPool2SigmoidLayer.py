@@ -24,7 +24,11 @@ class ConvoPool2SigmoidLayer(Dl.DummyLayer):
     def predict(self, x):
         return self.simulate(x)
 
-    def get_deltas(self, x, y, err_from_next):
-        d, _ = err_from_next.shape
-        input_err = np.reshape(err_from_next, (d, self.f, self.xh, self.xw))
-        return err_from_next, input_err
+    def get_delta(self, y, dedy):
+        return dedy
+
+    def get_dedx(self, delta):
+        d, _ = delta.shape
+        dedx = np.reshape(delta, (d, self.f, self.xh, self.xw))
+        return dedx
+

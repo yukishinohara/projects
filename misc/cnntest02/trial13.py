@@ -142,7 +142,7 @@ def __train_and_test(verbose=1):
     types.append(Cn.LAYER_TYPE_CON2SIG)
     params.append({
     })
-    types.append(Cn.LAYER_TYPE_SIGMOID_OUT)
+    types.append(Cn.LAYER_TYPE_SIGMOID)
     params.append({
         'output_size': y.shape[1],
         'learning_rate': sg_lr, 'momentum': sg_mt, 'weight_decay': sg_wd

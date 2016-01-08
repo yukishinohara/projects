@@ -35,7 +35,7 @@ class MaxPoolingLayer(Dl.DummyLayer):
         self.yh = int(self.xh / self.ah)
         self.yw = int(self.xw / self.aw)
 
-    def train_with_delta(self, x, output_delta):
+    def train_with_delta(self, x, delta):
         self.m = None
 
     def simulate(self, x):
@@ -54,7 +54,11 @@ class MaxPoolingLayer(Dl.DummyLayer):
     def predict(self, x):
         return self.simulate(x)
 
-    def get_deltas(self, x, y, err_from_next):
-        dy3 = np.repeat(np.repeat(err_from_next, self.aw, axis=3), self.ah, axis=2)
-        input_err = self.m * dy3
-        return err_from_next, input_err
+    def get_delta(self, y, dedy):
+        return dedy  # The activation function is f(x) = x
+
+    def get_dedx(self, delta):
+        dy3 = np.repeat(np.repeat(delta, self.aw, axis=3), self.ah, axis=2)
+        dedx = self.m * dy3
+        return dedx
+

@@ -16,7 +16,7 @@ class DummyLayer:
     def train_unsupervised(self, x):
         pass
 
-    def train_with_delta(self, x, output_delta):
+    def train_with_delta(self, x, delta):
         pass
 
     def simulate(self, x):
@@ -25,5 +25,9 @@ class DummyLayer:
     def predict(self, x):
         pass
 
-    def get_deltas(self, x, y, err_from_next):
+    def get_delta(self, y, dedy):
         pass
+
+    def get_dedx(self, delta):
+        pass
+

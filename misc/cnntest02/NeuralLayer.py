@@ -45,7 +45,7 @@ class NeuralLayer(Dl.DummyLayer):
     def train_unsupervised(self, x):
         pass
 
-    def train_with_delta(self, x, output_delta):
+    def train_with_delta(self, x, delta):
         pass
 
     def simulate(self, x):
@@ -54,5 +54,9 @@ class NeuralLayer(Dl.DummyLayer):
     def predict(self, x):
         return np.zeros((1, self.n))
 
-    def get_deltas(self, x, y, err_from_next):
-        return np.zeros((1, self.n)), np.zeros((1, self.m))
+    def get_delta(self, y, dedy):
+        return dedy
+
+    def get_dedx(self, delta):
+        return np.zeros((1, self.m))
+

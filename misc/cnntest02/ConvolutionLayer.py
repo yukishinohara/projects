@@ -51,13 +51,13 @@ class ConvolutionLayer(Dl.DummyLayer):
     def train_unsupervised(self, x):
         pass
 
-    def train_with_delta(self, x, output_delta):
+    def train_with_delta(self, x, delta):
         d = x.shape[0]
         x3 = as_strided(x,
                         shape=(d, self.f, self.wh, self.ww, self.yh, self.yw),
                         strides=x.strides+x.strides[-2::])
-        dw = np.einsum('ukrs,ulijrs->lkij', output_delta, x3)
-        dc = np.sum(output_delta, axis=0)
+        dw = np.einsum('ukrs,ulijrs->lkij', delta, x3)
+        dc = np.sum(delta, axis=0)
         alpha = self.lr / float(d)
         self.delta_w = alpha*dw + self.mt*self.delta_w - self.wd*self.w
         self.delta_c = alpha*dc + self.mt*self.delta_c - self.wd*self.c
@@ -75,19 +75,23 @@ class ConvolutionLayer(Dl.DummyLayer):
     def predict(self, x):
         return self.simulate(x)
 
-    def get_deltas(self, x, y, err_from_next):
-        d = y.shape[0]
+    def get_delta(self, y, dedy):
+        return dedy  # The activation function is f(x) = x
+
+    def get_dedx(self, delta):
+        d = delta.shape[0]
         xh = self.yh + self.wh - 1
         xw = self.yw + self.ww - 1
         wf = self.w[:, :, ::-1, ::-1]
         z_row = np.zeros((d, self.g, self.wh - 1, self.yw))
         z_col = np.zeros((d, self.g, xh + self.wh - 1, self.ww - 1))
-        output_delta = err_from_next  # The activation function is f(x) = x
+
         dy2 = np.append(np.append(z_col,
-                                  np.append(np.append(z_row, output_delta, axis=2), z_row, axis=2),
+                                  np.append(np.append(z_row, delta, axis=2), z_row, axis=2),
                                   axis=3), z_col, axis=3)
         dy3 = as_strided(dy2,
                          shape=(d, self.g, xh, xw, self.wh, self.ww),
                          strides=dy2.strides+dy2.strides[-2::])
-        input_err = np.einsum('kprs,lpijrs->lkij', wf, dy3)
-        return output_delta, input_err
+        dedx = np.einsum('kprs,lpijrs->lkij', wf, dy3)
+        return dedx
+

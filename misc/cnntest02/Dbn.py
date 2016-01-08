@@ -2,7 +2,6 @@
 
 from __future__ import print_function
 import SigmoidLayer as sl
-import SigmoidOutputLayer as so
 import NeuralLayer as nl
 import numpy as np
 import numpy.random as rnd
@@ -70,14 +69,16 @@ class Dbn:
                 self.local_layer_fine_tune(mini_batch, mini_target, 0)
 
     def local_layer_fine_tune(self, x, y, r):
-        if r == self.layer_num:
-            return y - x
         layer = self.layer[r]
         p = layer.simulate(x)
-        out_delta = self.local_layer_fine_tune(p, y, r+1)
-        in_delta = layer.get_input_delta(x, p, out_delta)
-        layer.train_with_delta(x, out_delta)
-        return in_delta
+        if r == self.layer_num - 1:
+            delta = y - p  # Assume the cost is the cross-entropy
+        else:
+            dedy = self.local_layer_fine_tune(p, y, r+1)
+            delta = layer.get_delta(p, dedy)
+        dedx = layer.get_dedx(delta)
+        layer.train_with_delta(x, delta)
+        return dedx
 
     def pre_train(self, x, y, hidden_sizes=[1],
                   learning_rate=0.1, momentum=0.5, weight_decay=0.001,
@@ -104,7 +105,7 @@ class Dbn:
                                        batch_size=bs[r], epoch=ep[r], verbose=verbose)
             instances = sig_layer.simulate(instances)
         r = self.layer_num - 1
-        sig_layer = so.SigmoidOutputLayer(y_col_size, lr[r], mt[r], wd[r])
+        sig_layer = sl.SigmoidLayer(y_col_size, lr[r], mt[r], wd[r])
         sig_layer.initialize_params(instances, {})
         self.layer.append(sig_layer)
         if verbose >= 1:
