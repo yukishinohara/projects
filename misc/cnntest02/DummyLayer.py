@@ -25,5 +25,5 @@ class DummyLayer:
     def predict(self, x):
         pass
 
-    def get_input_delta(self, x, y, output_delta):
+    def get_deltas(self, x, y, err_from_next):
         pass

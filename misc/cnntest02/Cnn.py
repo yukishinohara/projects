@@ -82,15 +82,15 @@ class Cnn:
                         'The target size and the output size are different {}, {}'.format(y.shape, x.shape))
                 return np.zeros(x.shape)
             else:
-                return y - x
+                return x
         elif r == len(self.layer):
             self.layer.append(self.create_layer(r))
             self.layer[r].initialize_params(x, self.layer_params[r])
         p = self.layer[r].simulate(x)
-        dy = self.layer_train_r(p, y, r+1)
-        dx = self.layer[r].get_input_delta(x, p, dy)
-        self.layer[r].train_with_delta(x, dy)
-        return dx
+        output_err = self.layer_train_r(p, y, r+1)
+        output_delta, input_err = self.layer[r].get_deltas(x, y, output_err)
+        self.layer[r].train_with_delta(x, output_delta)
+        return input_err
 
     def train(self, x, y,
               batch_size=10, epoch=50, verbose=0):

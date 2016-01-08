@@ -71,14 +71,14 @@ def __load_model_and_test(test_size=1000):
 def __train_and_test(verbose=2):
     # Load data
     loader = mn.MNISTloader2D('__data__')
-    [x, y] = loader.load_train_data(msize=7000)
+    [x, y] = loader.load_train_data(msize=500)
     [test_x, test_y] = loader.load_test_data(msize=1000)
 
     # Common hyper parameters
-    cl_lr = 0.02
+    cl_lr = 0.05
     cl_mt = 0.6
     cl_wd = 0.001
-    sg_lr = 0.03
+    sg_lr = 0.04
     sg_mt = 0.6
     sg_wd = 0.001
     bs = 20
@@ -121,7 +121,7 @@ def __train_and_test(verbose=2):
     types.append(Cn.LAYER_TYPE_CON2SIG)
     params.append({
     })
-    types.append(Cn.LAYER_TYPE_SIGMOID)
+    types.append(Cn.LAYER_TYPE_SIGMOID_OUT)
     params.append({
         'output_size': y.shape[1],
         'learning_rate': sg_lr, 'momentum': sg_mt, 'weight_decay': sg_wd
@@ -138,6 +138,6 @@ def __train_and_test(verbose=2):
 
 
 if __name__ == "__main__":
-    # __load_model_and_test()
-    __train_and_test()
+    __load_model_and_test()
+    # __train_and_test()
 

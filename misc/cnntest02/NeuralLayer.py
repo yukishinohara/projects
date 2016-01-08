@@ -54,5 +54,5 @@ class NeuralLayer(Dl.DummyLayer):
     def predict(self, x):
         return np.zeros((1, self.n))
 
-    def get_input_delta(self, x, y, output_delta):
-        return np.zeros((1, self.m))
+    def get_deltas(self, x, y, err_from_next):
+        return np.zeros((1, self.n)), np.zeros((1, self.m))

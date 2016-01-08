@@ -75,18 +75,19 @@ class ConvolutionLayer(Dl.DummyLayer):
     def predict(self, x):
         return self.simulate(x)
 
-    def get_input_delta(self, x, y, output_delta):
-        d = output_delta.shape[0]
+    def get_deltas(self, x, y, err_from_next):
+        d = y.shape[0]
         xh = self.yh + self.wh - 1
         xw = self.yw + self.ww - 1
         wf = self.w[:, :, ::-1, ::-1]
         z_row = np.zeros((d, self.g, self.wh - 1, self.yw))
         z_col = np.zeros((d, self.g, xh + self.wh - 1, self.ww - 1))
+        output_delta = err_from_next  # The activation function is f(x) = x
         dy2 = np.append(np.append(z_col,
                                   np.append(np.append(z_row, output_delta, axis=2), z_row, axis=2),
                                   axis=3), z_col, axis=3)
         dy3 = as_strided(dy2,
                          shape=(d, self.g, xh, xw, self.wh, self.ww),
                          strides=dy2.strides+dy2.strides[-2::])
-        dx = np.einsum('kprs,lpijrs->lkij', wf, dy3)
-        return dx
+        input_err = np.einsum('kprs,lpijrs->lkij', wf, dy3)
+        return output_delta, input_err

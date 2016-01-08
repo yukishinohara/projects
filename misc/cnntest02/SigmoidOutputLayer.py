@@ -12,7 +12,8 @@ class SigmoidOutputLayer(Sl.SigmoidLayer):
         Sl.SigmoidLayer.__init__(self, output_size,
                                  learning_rate=learning_rate, momentum=momentum, weight_decay=weight_decay)
 
-    def get_input_delta(self, x, y, output_delta):
-        input_delta = np.dot(output_delta, self.w)
-        return input_delta
+    def get_deltas(self, x, y, err_from_next):
+        output_delta = y - err_from_next
+        input_err = np.dot(output_delta, self.w)
+        return output_delta, input_err
 
