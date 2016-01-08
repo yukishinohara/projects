@@ -71,14 +71,14 @@ def __load_model_and_test(test_size=1000):
 def __train_and_test(verbose=2):
     # Load data
     loader = mn.MNISTloader2D('__data__')
-    [x, y] = loader.load_train_data(msize=800)
+    [x, y] = loader.load_train_data(msize=7000)
     [test_x, test_y] = loader.load_test_data(msize=1000)
 
     # Common hyper parameters
-    cl_lr = 0.05
+    cl_lr = 0.02
     cl_mt = 0.6
     cl_wd = 0.001
-    sg_lr = 0.04
+    sg_lr = 0.03
     sg_mt = 0.6
     sg_wd = 0.001
     bs = 20
@@ -88,11 +88,11 @@ def __train_and_test(verbose=2):
     # Create model
     types = []
     params = []
-    #     Convolution    MaxPool   Convolution   MaxPool   Convolution    MaxPool    Squeeze     Logistic
-    # (28, 28) -> (24, 24) -> (12, 12) ->  (8, 8)  ->  (4, 4)  ->   (2, 2)  ->  (1, 1)  ->  (576,)  ->  (10,)
+    #     Convolution    MaxPool  Convolution  Convolution   MaxPool   Convolution    Squeeze     Logistic
+    # (28, 28) -> (24, 24) -> (12, 12) ->  (8, 8)  ->  (6, 6)  ->   (3, 3)  ->  (1, 1)  ->  (120,)  ->  (10,)
     types.append(Cn.LAYER_TYPE_CONVOLUTION)
     params.append({
-        'weight_row_size': 5, 'weight_col_size': 5, 'output_feature_num': 16,
+        'weight_row_size': 5, 'weight_col_size': 5, 'output_feature_num': 8,
         'learning_rate': cl_lr, 'momentum': cl_mt, 'weight_decay': cl_wd
     })
     types.append(Cn.LAYER_TYPE_MAX_POOLING)
@@ -101,7 +101,12 @@ def __train_and_test(verbose=2):
     })
     types.append(Cn.LAYER_TYPE_CONVOLUTION)
     params.append({
-        'weight_row_size': 5, 'weight_col_size': 5, 'output_feature_num': 24,
+        'weight_row_size': 5, 'weight_col_size': 5, 'output_feature_num': 12,
+        'learning_rate': cl_lr, 'momentum': cl_mt, 'weight_decay': cl_wd
+    })
+    types.append(Cn.LAYER_TYPE_CONVOLUTION)
+    params.append({
+        'weight_row_size': 3, 'weight_col_size': 3, 'output_feature_num': 16,
         'learning_rate': cl_lr, 'momentum': cl_mt, 'weight_decay': cl_wd
     })
     types.append(Cn.LAYER_TYPE_MAX_POOLING)
@@ -112,10 +117,6 @@ def __train_and_test(verbose=2):
     params.append({
         'weight_row_size': 3, 'weight_col_size': 3, 'output_feature_num': 120,
         'learning_rate': cl_lr, 'momentum': cl_mt, 'weight_decay': cl_wd
-    })
-    types.append(Cn.LAYER_TYPE_MAX_POOLING)
-    params.append({
-        'scale_row_ratio': 2, 'scale_col_ratio': 2
     })
     types.append(Cn.LAYER_TYPE_CON2SIG)
     params.append({
@@ -137,6 +138,6 @@ def __train_and_test(verbose=2):
 
 
 if __name__ == "__main__":
-    __load_model_and_test()
-    #__train_and_test()
+    # __load_model_and_test()
+    __train_and_test()
 
