@@ -71,7 +71,7 @@ def __load_model_and_test(test_size=0):
 def __train_and_test(verbose=2):
     # Load data
     loader = mn.MNISTloader2D('__data__')
-    [x, y] = loader.load_train_data(msize=1000)
+    [x, y] = loader.load_train_data(msize=10000)
     [test_x, test_y] = loader.load_test_data(msize=1000)
 
     # Common hyper parameters
@@ -83,7 +83,7 @@ def __train_and_test(verbose=2):
     sg_wd = 0.001
     bs = 20
     ep = 5
-    ep_repeat = 30
+    ep_repeat = 50
 
     # Create model
     types = []
