@@ -9,7 +9,7 @@ import os
 import struct
 
 
-def read_wave_file(filename, sample_width=2):
+def read_wave_file(filename, sample_width=2, stride=1):
     w_file = wave.open(filename, 'rb')
     w_length = w_file.getnframes()
     print('{}: {}'.format(filename, w_file.getparams()))
@@ -19,7 +19,7 @@ def read_wave_file(filename, sample_width=2):
     w_dat = w_file.readframes(w_length)
     data = struct.unpack('<{}h'.format(w_length), w_dat)
     w_file.close()
-    return data
+    return data[::stride]
 
 
 def map_0_1(data):
@@ -35,15 +35,16 @@ def map_0_1(data):
 
 def create_data_file():
     # Load training wav files to np.array
-    num_space = 100
+    num_space = 30
     num_feature = 11
     sample_width = 2
+    stride = 50
     path = os.path.join('.', '__data_tmp__', 'numvoice', 'edit', 'train')
     train_data = np.array([])
     train_label = np.array([])
     for i in range(num_feature):
         filename = os.path.join(path, '{}.wav'.format(i))
-        data = np.array(read_wave_file(filename, sample_width))
+        data = np.array(read_wave_file(filename, sample_width, stride))
         train_data = np.append(train_data, data)
         label = np.zeros(((num_feature+1),), dtype=np.int)
         label[i] = 1
@@ -65,7 +66,7 @@ def create_data_file():
     for root, dirs, files in os.walk(path):
         for file in files:
             filename = os.path.join(root, file)
-            data = np.array(read_wave_file(filename, sample_width))
+            data = np.array(read_wave_file(filename, sample_width, stride))
             data = np.reshape(data, (data.size, 1))
             data = map_0_1(data)
             test_dataset.append(data)
@@ -133,5 +134,6 @@ def main():
 
 
 if __name__ == "__main__":
+    # create_data_file()
     main()
 
