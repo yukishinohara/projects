@@ -52,8 +52,8 @@ def create_data_file():
     # Load training wav files to np.array
     num_feature = 11
     sample_width = 2
-    stride = 30
-    stride_wave = 30
+    stride = 10
+    stride_wave = 10
     num_space = 50
     num_space_wave = 50
     path = os.path.join('.', '__data_tmp__', 'numvoice', 'edit', 'train')
@@ -300,7 +300,7 @@ def create_data_file2():
 
 
 def main():
-    fp = h5.File('testdata03.h5', 'r')
+    fp = h5.File('testdata02.h5', 'r')
     x = fp['/train/data'].value
     w = fp['/train/wave'].value
     y = fp['/train/label'].value
@@ -320,11 +320,10 @@ def main():
     plt.subplot(3, 1, 2)
     plt.plot(t2, x)
     plt.subplot(3, 1, 3)
-    kana = ['a', 'i', 'u', 'e', 'o']
-    iro = ['#ff0000', '#ffff00', '#ff00ff', '#00ff00', '#00ffff', '#0000ff'
+    iro = ['#ff0000', '#ffff00', '#ff00ff', '#00ff00', '#00ffff', '#0000ff',
            '#770000', '#007700', '#000077', '#aaff00', '#000000']
     for i in range(num_feature):
-        plt.plot(t2, y[:, i], label='{}'.format(kana[i]), color='{}'.format(iro[i]))
+        plt.plot(t2, y[:, i], label='{}'.format(i), color='{}'.format(iro[i]))
     plt.legend(prop={'size': 7})
     plt.ylim(0, 1.1)
     plt.show()
