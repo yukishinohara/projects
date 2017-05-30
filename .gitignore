@@ -3,3 +3,6 @@
 !/.gitignore
 *.class
 __*
+*.out
+*.tmp
+tmp_*
