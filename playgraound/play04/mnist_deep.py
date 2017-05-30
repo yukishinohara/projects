@@ -55,12 +55,12 @@ def main(_):
 
   # Define a CNN model
   #
-  #  x[28x28x1]==conv(5x5x32)==>h1[28x28x32]==maxpool(2x2)==>h2[14x14x32]
-  #  ==conv(5x5x64)==>h3[14x14x64]==maxpool(2x2)==>h4[7x7x64]
-  #  ==fullcn(3136x10)==>y[10]
-  h1 = relu_conv2d(x_tensor, 5, 1, 8)
+  #  x[28x28x1]==conv(5x5x32)==>h1[28x28x12]==maxpool(2x2)==>h2[14x14x12]
+  #  ==conv(5x5x16)==>h3[14x14x16]==maxpool(2x2)==>h4[7x7x16]
+  #  ==fullcn(784x10)==>y[10]
+  h1 = relu_conv2d(x_tensor, 5, 1, 12)
   h2 = max_pool(h1, 2)
-  h3 = relu_conv2d(h2, 5, 8, 16)
+  h3 = relu_conv2d(h2, 5, 12, 16)
   h4 = max_pool(h3, 2)
   h4_flat = tf.reshape(h4, [-1,7*7*16])
   h5 = relu_fully_connected(h4_flat, 7*7*16, 1024)
